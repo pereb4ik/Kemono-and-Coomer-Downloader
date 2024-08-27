@@ -153,7 +153,7 @@ def baixar_conteudo(url, config):
                     f.write(video_response.content)
                 links_baixados.add(video_url)
 
-    print(f"Post content from {url} downloaded successfully!")
+    print(f"Post content from {url} downloaded successfully!", flush=True)
 
 # Load settings from the JSON file
 with open("code/profileconfig.json", "r") as f:
@@ -200,6 +200,7 @@ while True:
     if page_number >= total_pages - 1:
         break
 
+    print("Processed page number:", page_number)
     page_number += 1
 
 # Filter posts based on the settings in profileconfig.json
