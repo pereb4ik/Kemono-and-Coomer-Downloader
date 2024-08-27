@@ -169,6 +169,8 @@ base_url = input("Please enter the profile URL: ")
 # Variable to store all posts
 all_posts = []
 
+start_post = 1
+post_number = 1
 # Iterate over pages to collect all posts
 page_number = 0
 while True:
@@ -189,7 +191,11 @@ while True:
 
     for post_card in post_cards:
         post_info = extract_post_info(post_card, base_url)
-        all_posts.append(post_info)
+        if post_number >= start_post:
+            all_posts.append(post_info)
+        # else:
+        #    print(post_info['link'])
+        post_number = post_number + 1
 
     if page_number >= total_pages - 1:
         break
