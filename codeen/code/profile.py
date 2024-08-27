@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Function to extract information from a post
 def extract_post_info(post_card, base_url):
@@ -99,6 +100,9 @@ def salvar_info_post(soup, folder, save_comments_txt):
 # Function to download content from a URL
 def baixar_conteudo(url, config):
     response = requests.get(url)
+    # request until good result
+    while not response.ok:
+        response = requests.get(url)
     html_content = response.text
     soup = BeautifulSoup(html_content, "html.parser")
 
@@ -114,6 +118,10 @@ def baixar_conteudo(url, config):
     post_id = soup.find("meta", attrs={"name": "id"})["content"]
     post_folder = post_id
     post_path = os.path.join(base_folder, author_folder, "posts", post_folder)
+    print(post_path)
+    # check for already downloaded post
+    if os.path.exists(post_path):
+        return
     os.makedirs(post_path, exist_ok=True)
 
     if config["save_info_txt"]:
@@ -218,8 +226,15 @@ for post in all_posts:
 # Save filtered post information to a text file
 save_posts_to_file(filtered_posts)
 
+max_workers = 10
+executor = ThreadPoolExecutor(max_workers=max_workers)
+
+futures = [executor.submit(baixar_conteudo, post['link'], config) for post in filtered_posts]
+
 # Iterate over all links of the filtered posts and download the content
-for post in filtered_posts:
-    baixar_conteudo(post['link'], config)
+#for post in filtered_posts:
+#    baixar_conteudo(post['link'], config)
+for future in as_completed(futures):
+    future.result()
 
 print(f"Information for {len(filtered_posts)} posts saved and content downloaded successfully!")
